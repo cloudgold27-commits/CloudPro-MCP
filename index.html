@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XAUUSD Signal Engine | CloudPro MCP</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #141b2d;
+      --border: #1e293b;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --gold: #f59e0b;
+      --purple: #a855f7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .badge {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .card h2 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .price {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .change { font-size: 1rem; margin-top: 4px; }
+    .bullish { color: var(--green); }
+    .bearish { color: var(--red); }
+    .neutral { color: var(--muted); }
+    .signal-box {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .signal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .direction {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    .confidence {
+      background: var(--purple);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .levels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .level {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .level span {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .level strong {
+      font-size: 1.1rem;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 18px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .meta b { color: var(--text); }
+    .section-title {
+      font-size: 1.1rem;
+      margin: 28px 0 14px;
+      color: var(--gold);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: var(--muted); font-weight: 500; }
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    .update-time {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    @media (max-width: 600px) {
+      .price { font-size: 1.8rem; }
+      .direction { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>XAUUSD Signal Engine</h1>
+        <div class="update-time" id="lastUpdate">Last updated: loading...</div>
+      </div>
+      <div class="badge">CloudPro MCP • Free GitHub Pages</div>
+    </header>
+
+    <!-- Live Price -->
+    <div class="grid">
+      <div class="card">
+        <h2>Live Price</h2>
+        <div class="price" id="livePrice">—</div>
+        <div class="change" id="priceChange">—</div>
+      </div>
+      <div class="card">
+        <h2>Session</h2>
+        <div style="font-size:1.3rem;font-weight:600" id="sessionName">—</div>
+        <div style="color:var(--muted);margin-top:4px" id="sessionNote">—</div>
+      </div>
+      <div class="card">
+        <h2>HTF Bias</h2>
+        <div style="font-size:1.3rem;font-weight:600" id="htfBias">—</div>
+        <div style="color:var(--muted);margin-top:4px" id="htfNote">H4 + Daily Structure</div>
+      </div>
+    </div>
+
+    <!-- Main Signal -->
+    <div class="signal-box">
+      <div class="signal-header">
+        <div class="direction" id="signalDirection">Analyzing...</div>
+        <div class="confidence" id="confidence">—/10</div>
+      </div>
+      <div id="setupSummary" style="color:var(--muted);margin-bottom:8px">
+        Waiting for latest analysis...
+      </div>
+      <div class="levels">
+        <div class="level">
+          <span>Entry Zone</span>
+          <strong id="entry">—</strong>
+        </div>
+        <div class="level">
+          <span>Stop Loss</span>
+          <strong id="sl" style="color:var(--red)">—</strong>
+        </div>
+        <div class="level">
+          <span>TP1</span>
+          <strong id="tp1" style="color:var(--green)">—</strong>
+        </div>
+        <div class="level">
+          <span>TP2</span>
+          <strong id="tp2" style="color:var(--green)">—</strong>
+        </div>
+      </div>
+      <div class="meta">
+        <div>News: <b id="newsStatus">—</b></div>
+        <div>Invalidation: <b id="invalidation">—</b></div>
+      </div>
+    </div>
+
+    <!-- Key Levels -->
+    <h3 class="section-title">Key Levels (SMC + ICT)</h3>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Level</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="levelsTable">
+          <tr><td colspan="3" style="color:var(--muted)">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Analysis Notes -->
+    <h3 class="section-title">Full Analysis Notes</h3>
+    <div class="card">
+      <pre id="fullNotes" style="white-space:pre-wrap;font-family:inherit;color:var(--muted);font-size:0.9rem">
+Loading analysis...
+      </pre>
+    </div>
+
+    <footer>
+      Powered by Grok XAUUSD Signal Engine • Data from OctaFX MCP • Not financial advice<br>
+      Free hosting via GitHub Pages • Update signals by asking Grok
+    </footer>
+  </div>
+
+  <script>
+    // ========== SIGNAL DATA (update this object when new signal is ready) ==========
+    const signalData = {
+      lastUpdate: new Date().toISOString(),
+      price: 4178,
+      change: "+0.25%",
+      session: "NY Killzone / London-NY Overlap",
+      sessionNote: "Highest probability window",
+      htfBias: "Mildly Bullish (H4 Recovery)",
+      direction: "LONG (Pullback)",
+      confidence: 6.5,
+      summary: "Price recovered from 4073 CPI low and is consolidating after tagging 4192. Prefer longs on dips into demand while H4 higher lows hold. Daily still overall bearish so size carefully.",
+      entry: "4158 – 4172",
+      sl: "4145 – 4148",
+      tp1: "4190 – 4195",
+      tp2: "4210 – 4230",
+      news: "Clear of hard blackout. Medium data already passed.",
+      invalidation: "Clean break & close below 4145",
+      levels: [
+        { type: "Resistance", level: "4190 – 4192", notes: "Today's high / Buy-side liquidity" },
+        { type: "Resistance", level: "4201 – 4210", notes: "Next structural resistance" },
+        { type: "Resistance", level: "4217 – 4230", notes: "Major HTF resistance + 61.8%" },
+        { type: "Support", level: "4170 – 4172", notes: "Current minor demand" },
+        { type: "Support", level: "4155 – 4148", notes: "Strong demand / Asian low area" },
+        { type: "Support", level: "4135 – 4125", notes: "Deeper support" },
+        { type: "Major Demand", level: "4100 – 4073", notes: "Institutional demand / previous lows" }
+      ],
+      fullNotes: `XAUUSD Full Analysis – 16 Oct 2026\n\nHTF Bias: Daily still bearish (lower highs from Sept peaks), but clear higher low at 4066-4073. H4 is in recovery mode with higher lows.\n\nSession: Currently in NY Killzone (best window).\n\nPreferred Setup: Long on pullback into 4158-4172 with PA confirmation.\n\nRisk: 0.5-1% only. This is a counter-trend recovery trade.`
+    };
+
+    // ========== RENDER ==========
+    function render() {
+      document.getElementById('lastUpdate').textContent = 'Last updated: ' + new Date(signalData.lastUpdate).toLocaleString();
+      document.getElementById('livePrice').textContent = '$' + signalData.price.toLocaleString();
+      document.getElementById('priceChange').textContent = signalData.change;
+      document.getElementById('priceChange').className = 'change ' + (signalData.change.startsWith('+') ? 'bullish' : 'bearish');
+
+      document.getElementById('sessionName').textContent = signalData.session;
+      document.getElementById('sessionNote').textContent = signalData.sessionNote;
+      document.getElementById('htfBias').textContent = signalData.htfBias;
+
+      document.getElementById('signalDirection').textContent = signalData.direction;
+      document.getElementById('signalDirection').className = 'direction ' + (signalData.direction.includes('LONG') ? 'bullish' : signalData.direction.includes('SHORT') ? 'bearish' : 'neutral');
+      document.getElementById('confidence').textContent = signalData.confidence + '/10';
+
+      document.getElementById('setupSummary').textContent = signalData.summary;
+      document.getElementById('entry').textContent = signalData.entry;
+      document.getElementById('sl').textContent = signalData.sl;
+      document.getElementById('tp1').textContent = signalData.tp1;
+      document.getElementById('tp2').textContent = signalData.tp2;
+      document.getElementById('newsStatus').textContent = signalData.news;
+      document.getElementById('invalidation').textContent = signalData.invalidation;
+
+      const tbody = document.getElementById('levelsTable');
+      tbody.innerHTML = signalData.levels.map(l => `
+        <tr>
+          <td>${l.type}</td>
+          <td><strong>${l.level}</strong></td>
+          <td style="color:var(--muted)">${l.notes}</td>
+        </tr>
+      `).join('');
+
+      document.getElementById('fullNotes').textContent = signalData.fullNotes;
+    }
+
+    render();
+  </script>
+</body>
+</html>
